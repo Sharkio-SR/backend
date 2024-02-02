@@ -18,6 +18,11 @@ public class PlayerService {
         return this.repository.findAll();
     }
 
+    public Player getById(Integer id) {
+        return this.repository.findById(id.longValue()).orElseThrow(() ->
+                new RuntimeException("Player with id " + id + " not found"));
+    }
+
     public Player addPlayer(Player player) {
         return this.repository.save(player);
     }

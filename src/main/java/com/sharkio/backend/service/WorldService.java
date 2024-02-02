@@ -25,6 +25,7 @@ public class WorldService {
             World world = new World();
             world.setX_dim(600);
             world.setY_dim(800);
+            world.setPlayers(new HashSet<Player>());
             this.repository.save(world);
         }
         return this.repository.findAll().iterator().next();

@@ -15,4 +15,9 @@ public class PlayerController {
     public Iterable<Player> getPlayers() {
         return this.service.getPlayers();
     }
+
+    @GetMapping("/{id}")
+    public Player getPlayerById(@PathVariable Integer id) {
+        return this.service.getById(id);
+    }
 }
