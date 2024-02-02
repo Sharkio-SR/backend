@@ -41,7 +41,6 @@ public class WorldService {
 
         Player saved_player = this.playerService.addPlayer(new_player);
         Set<Player> players  = world.getPlayers();
-        System.out.println(saved_player);
         players.add(saved_player);
         world.setPlayers(players);
         this.repository.save(world);
