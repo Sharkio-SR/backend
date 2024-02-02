@@ -35,8 +35,7 @@ public class PlayerService {
         Player player = this.getById(id);
         World world = this.worldRepository.findAll().iterator().next();
 
-        System.out.println(0 <= newX && newX <= world.getX_dim() && 0 <= newY && newY <= world.getY_dim());
-        if(0 > newX || newX > world.getX_dim() || 0 >= newY || newY >= world.getY_dim()) {
+        if(0 > newX || newX > world.getX_dim() || 0 > newY || newY > world.getY_dim()) {
          throw new RuntimeException("New coordinates are out of bound");
         }
         player.setPos_x(newX);
