@@ -45,9 +45,7 @@ public class WorldService {
         players.add(saved_player);
         world.setPlayers(players);
 
-        if (!world.equals(this.getWorld())) {
-            this.repository.save(world);
-        }
+        this.repository.save(world);
 
         return saved_player;
     }

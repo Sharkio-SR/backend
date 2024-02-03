@@ -50,8 +50,8 @@ public class WorldServiceTests {
         World resultWorld = worldService.getWorld();
 
         assertNotNull(resultWorld);
-        assertEquals(600, resultWorld.getX_dim());
-        assertEquals(800, resultWorld.getY_dim());
+        assertEquals((float) 600, resultWorld.getX_dim());
+        assertEquals((float) 800, resultWorld.getY_dim());
         assertTrue(resultWorld.getPlayers().isEmpty());
     }
 
