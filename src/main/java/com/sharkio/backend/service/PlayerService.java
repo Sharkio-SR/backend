@@ -23,7 +23,7 @@ public class PlayerService {
     }
 
     public Player getById(Integer id) {
-        return this.repository.findById(id.longValue()).orElseThrow(() ->
+        return this.repository.findById(id).orElseThrow(() ->
                 new RuntimeException("Player with id " + id + " not found"));
     }
 
