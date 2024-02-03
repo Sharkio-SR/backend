@@ -19,7 +19,7 @@ public class World {
     @Column(name="y_dim")
     private float y_dim;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(name = "World_Player",
     joinColumns = @JoinColumn(name = "world_id"),
     inverseJoinColumns = @JoinColumn(name = "player_id"))
