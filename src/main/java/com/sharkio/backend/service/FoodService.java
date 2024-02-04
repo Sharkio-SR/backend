@@ -1,7 +1,6 @@
 package com.sharkio.backend.service;
 
 import com.sharkio.backend.model.Food;
-import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.FoodRepository;
 import com.sharkio.backend.repository.WorldRepository;
@@ -30,7 +29,7 @@ public class FoodService {
                 new RuntimeException("Food with id " + id + " not found"));
     }
 
-    public Food addfood(Food food) {
+    public Food addFood(Food food) {
         // Assert no null food are added
         if(food != null) {
             // Assert food is not already in the game

@@ -13,8 +13,8 @@ import java.util.*;
 @Data
 @Service
 public class WorldService {
-    private final float Y_DIM = 600;
-    private final float X_DIM = 800;
+    private final float X_DIM = 600;
+    private final float Y_DIM = 800;
     private final Integer NB_FOODS = 10;
 
     @Autowired
@@ -37,7 +37,7 @@ public class WorldService {
             Food f = new Food();
             f.setPos_x(random.nextFloat()* world.getX_dim());
             f.setPos_y(random.nextFloat()* world.getY_dim());
-            this.foodService.addfood(f);
+            this.foodService.addFood(f);
             foods.add(f);
         }
         world.setFoods(foods);
