@@ -25,8 +25,9 @@ public class WorldService {
             World world = new World();
             world.setX_dim(600);
             world.setY_dim(800);
-            world.setPlayers(new HashSet<Player>());
+            world.setPlayers(new HashSet<>());
             this.repository.save(world);
+            return world;
         }
         return this.repository.findAll().iterator().next();
     }
@@ -43,6 +44,7 @@ public class WorldService {
         Set<Player> players  = world.getPlayers();
         players.add(saved_player);
         world.setPlayers(players);
+
         this.repository.save(world);
 
         return saved_player;
