@@ -20,6 +20,8 @@ public class WorldService {
 
 
     public World getWorld() {
+        // Look if a World already exists, if yes => return it, otherwise create and save it
+        // Singleton in database mocking strategy
         Iterable<World> worlds = this.repository.findAll();
         if(!worlds.iterator().hasNext()) {
             World world = new World();
@@ -36,10 +38,12 @@ public class WorldService {
         World world = this.getWorld();
         Random random  = new Random();
 
+        // Create new player with random coordinates
         Player new_player = new Player();
         new_player.setPos_x(random.nextFloat()* world.getX_dim());
         new_player.setPos_y(random.nextFloat()* world.getY_dim());
 
+        // Save player and add it in the player set of the world
         Player saved_player = this.playerService.addPlayer(new_player);
         Set<Player> players  = world.getPlayers();
         players.add(saved_player);

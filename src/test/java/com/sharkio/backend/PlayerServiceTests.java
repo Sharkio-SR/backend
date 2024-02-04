@@ -18,6 +18,7 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -139,14 +140,14 @@ public class PlayerServiceTests {
     public void addPlayer_ShouldThrowExceptionWhenPlayerIdAlreadyExists() {
         // Arrange
         Player existingPlayer = new Player();
-        existingPlayer.setId(1L);
+        existingPlayer.setId(1);
         List<Player> players = new ArrayList<>(List.of(existingPlayer));
 
         when(playerRepository.existsById(1)).thenReturn(true);
         when(playerService.getPlayers()).thenReturn(players);
 
         Player playerToAdd = new Player();
-        playerToAdd.setId(1L);
+        playerToAdd.setId(1);
 
         // Act and Assert
         assertThrows(RuntimeException.class, () -> playerService.addPlayer(playerToAdd));
@@ -180,7 +181,7 @@ public class PlayerServiceTests {
         Integer id = 2;
         when(playerRepository.findById(id)).thenReturn(Optional.empty());
 
-        // Assert
+        // Act and Assert
         assertThrows(RuntimeException.class, () -> playerService.move(id, 0, 0));
     }
 
@@ -197,7 +198,7 @@ public class PlayerServiceTests {
         when(playerRepository.findById(id)).thenReturn(Optional.of(new Player()));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
-        // Assert
+        // Act and Assert
         assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY));
     }
 
@@ -224,5 +225,36 @@ public class PlayerServiceTests {
         Assert.assertEquals(newY, movedPlayer.getPos_y(), 0.001f);
         verify(playerRepository).save(player);
     }
+
+    @Test
+    public void testDeletePlayer_successful() {
+        // Arrange
+        Player player = new Player();
+        player.setId(1);
+        World world = new World();
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
+
+        when(worldRepository.findAll()).thenReturn(new ArrayList<>(List.of(world)));
+        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
+
+        // Act
+        Player deletedPlayer = playerService.delete(player.getId());
+
+        // Assert
+        Assert.assertEquals(deletedPlayer, player);
+        Assert.assertEquals(world.getPlayers(), new HashSet<Player>());
+    }
+
+    @Test
+    public void testDeletePlayer_notFound() {
+        Integer nonExistentId = 999;
+
+        // Act and assert
+        assertThrows(RuntimeException.class, () -> playerService.delete(nonExistentId));
+    }
+
+
 
 }

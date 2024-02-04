@@ -69,7 +69,7 @@ public class WorldServiceTests {
         world.setY_dim(800);
 
         Player player = new Player();
-        player.setId(1L);
+        player.setId(1);
         player.setPos_x(300);
         player.setPos_y(400);
 

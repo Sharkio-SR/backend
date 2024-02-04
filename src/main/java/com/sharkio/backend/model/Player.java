@@ -9,7 +9,7 @@ import lombok.Data;
 public class Player {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name="pos_x")
     private float pos_x;
