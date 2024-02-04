@@ -72,6 +72,7 @@ public class PlayerService {
          throw new RuntimeException("New coordinates are out of bound");
         }
 
+
         // Act and save
         player.setPos_x(newX);
         player.setPos_y(newY);
