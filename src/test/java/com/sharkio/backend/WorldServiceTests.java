@@ -31,24 +31,30 @@ public class WorldServiceTests {
 
     @Test
     public void testGetWorldWhenWorldExists() {
+        // Arrange
         World existingWorld = new World();
         existingWorld.setX_dim(600);
         existingWorld.setY_dim(800);
 
         when(worldRepositoryMock.findAll()).thenReturn(Collections.singletonList(existingWorld));
 
+        // Act
         World resultWorld = worldService.getWorld();
 
+        // Assert
         assertNotNull(resultWorld);
         assertEquals(existingWorld, resultWorld);
     }
 
     @Test
     public void testGetWorldWhenNoWorldExists() {
+        // Arrange
         when(worldRepositoryMock.findAll()).thenReturn(Collections.emptyList());
 
+        // Act
         World resultWorld = worldService.getWorld();
 
+        // Assert
         assertNotNull(resultWorld);
         assertEquals((float) 600, resultWorld.getX_dim());
         assertEquals((float) 800, resultWorld.getY_dim());
@@ -57,6 +63,7 @@ public class WorldServiceTests {
 
     @Test
     public void testJoin() {
+        // Arrange
         World world = new World();
         world.setX_dim(600);
         world.setY_dim(800);
@@ -77,36 +84,16 @@ public class WorldServiceTests {
         when(worldRepositoryMock.save(world)).thenReturn(savedWorld);
         when(playerServiceMock.addPlayer(any(Player.class))).thenReturn(player);
 
+        // Act
         Player savedPlayer = worldService.join();
+        Set<Player> savedPlayers = savedWorld.getPlayers();
 
+        // Assert
         assertNotNull(savedPlayer);
         assertEquals(player, savedPlayer);
 
-        Set<Player> savedPlayers = savedWorld.getPlayers();
         assertNotNull(savedPlayers);
         assertEquals(1, savedPlayers.size());
         assertTrue(savedPlayers.contains(player));
     }
-
-    /*@Test
-    public void testJoinWhenPlayerNotAddedSuccessfully() {
-        World existingWorld = new World();
-        existingWorld.setX_dim(600);
-        existingWorld.setY_dim(800);
-
-        // Définir le comportement du mock de WorldRepository pour retourner le monde existant
-        when(worldRepositoryMock.findAll()).thenReturn(Collections.singletonList(existingWorld));
-
-        // Définir le comportement du mock de PlayerService pour retourner null, simulant un échec lors de l'ajout du joueur
-        when(playerServiceMock.addPlayer(any(Player.class))).thenReturn(null);
-
-        // Appeler la méthode à tester
-        Player savedPlayer = worldService.join();
-
-        // Vérifier le résultat
-        assertNull(savedPlayer);
-
-        // Vérifier que le monde n'a pas été modifié
-        verify(worldRepositoryMock, never()).save(any(World.class));
-    }*/
 }

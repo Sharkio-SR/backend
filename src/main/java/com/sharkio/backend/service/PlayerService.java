@@ -9,6 +9,9 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
+import java.util.List;
+
 @Data
 @Service
 public class PlayerService {
@@ -28,7 +31,15 @@ public class PlayerService {
     }
 
     public Player addPlayer(Player player) {
-        return this.repository.save(player);
+        if(player != null) {
+            for (Player value : this.getPlayers()) {
+                if (value.equals(player)) {
+                    throw new RuntimeException("Not allowed to add null player");
+                }
+            }
+            return this.repository.save(player);
+        }
+        throw new RuntimeException("Not allowed to add null player");
     }
 
     public Player move(Integer id, float newX, float newY) {
