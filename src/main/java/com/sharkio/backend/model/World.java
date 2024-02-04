@@ -24,4 +24,10 @@ public class World {
     joinColumns = @JoinColumn(name = "world_id"),
     inverseJoinColumns = @JoinColumn(name = "player_id"))
     private Set<Player> players;
+
+    @ManyToMany
+    @JoinTable(name = "World_Food",
+            joinColumns = @JoinColumn(name = "world_id"),
+            inverseJoinColumns = @JoinColumn(name = "food_id"))
+    private Set<Food> foods;
 }

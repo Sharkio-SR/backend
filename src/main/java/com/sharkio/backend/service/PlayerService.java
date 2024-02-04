@@ -38,7 +38,7 @@ public class PlayerService {
             // Assert player is not already in the game
             for (Player value : this.getPlayers()) {
                 if (value.equals(player)) {
-                    throw new RuntimeException("Not allowed to add null player");
+                    throw new RuntimeException("Not allowed to add existing player");
                 }
             }
             // Save player

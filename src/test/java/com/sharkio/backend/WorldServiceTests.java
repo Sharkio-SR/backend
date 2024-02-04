@@ -3,6 +3,7 @@ package com.sharkio.backend;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.WorldRepository;
+import com.sharkio.backend.service.FoodService;
 import com.sharkio.backend.service.PlayerService;
 import com.sharkio.backend.service.WorldService;
 import org.junit.Test;
@@ -25,6 +26,9 @@ public class WorldServiceTests {
 
     @Mock
     private PlayerService playerServiceMock;
+
+    @Mock
+    private FoodService foodService;
 
     @InjectMocks
     private WorldService worldService;
@@ -59,6 +63,18 @@ public class WorldServiceTests {
         assertEquals((float) 600, resultWorld.getX_dim());
         assertEquals((float) 800, resultWorld.getY_dim());
         assertTrue(resultWorld.getPlayers().isEmpty());
+    }
+
+    @Test
+    public void testWorldInitWithFood() {
+        // Arrange
+        when(worldRepositoryMock.findAll()).thenReturn(Collections.emptyList());
+
+        // Act
+        World resultWorld = worldService.getWorld();
+
+        // Assert
+        assertEquals(resultWorld.getFoods().size(), 10);
     }
 
     @Test
