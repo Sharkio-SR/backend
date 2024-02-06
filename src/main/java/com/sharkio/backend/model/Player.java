@@ -16,5 +16,8 @@ public class Player {
 
     @Column(name="pos_y")
     private float pos_y;
+
+    @Column(name="score")
+    private int score;
 }
 

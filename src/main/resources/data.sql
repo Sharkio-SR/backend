@@ -11,7 +11,8 @@ CREATE TABLE World (
 CREATE TABLE Player (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     pos_x FLOAT NOT NULL,
-    pos_y FLOAT NOT NULL
+    pos_y FLOAT NOT NULL,
+    score INT NOT NULL
 );
 
 CREATE TABLE Food (

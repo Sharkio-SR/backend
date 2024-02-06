@@ -1,9 +1,12 @@
 package com.sharkio.backend;
 
+import com.sharkio.backend.model.Food;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
+import com.sharkio.backend.repository.FoodRepository;
 import com.sharkio.backend.repository.PlayerRepository;
 import com.sharkio.backend.repository.WorldRepository;
+import com.sharkio.backend.service.FoodService;
 import com.sharkio.backend.service.PlayerService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,7 +20,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +33,12 @@ public class PlayerServiceTests {
 
     @Mock
     private WorldRepository worldRepository;
+
+    @Mock
+    private FoodService foodService;
+
+    @Mock
+    private FoodRepository foodRepository;
 
     @InjectMocks
     private PlayerService playerService;
@@ -163,6 +172,8 @@ public class PlayerServiceTests {
         World world = new World();
         world.setX_dim(100);
         world.setY_dim(200);
+        world.setFoods(new HashSet<>());
+
         when(playerRepository.findById(id)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
@@ -213,6 +224,7 @@ public class PlayerServiceTests {
         World world = new World();
         world.setX_dim(300);
         world.setY_dim(300);
+        world.setFoods(new HashSet<>());
 
         when(playerRepository.findById(id)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
@@ -255,6 +267,126 @@ public class PlayerServiceTests {
         assertThrows(RuntimeException.class, () -> playerService.delete(nonExistentId));
     }
 
+    @Test
+    public void testEat_foodInRange() {
+        // Arrange
+        float newX = 10;
+        float newY = 10;
 
+        Player player = new Player();
+        player.setId(1);
+        player.setPos_x(100);
+        player.setPos_y(100);
 
+        World world = new World();
+        world.setX_dim(300);
+        world.setY_dim(300);
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
+
+        Food food = new Food();
+        food.setId(1);
+        food.setPos_x(9.75F);
+        food.setPos_y(9.75F);
+        Set<Food> foods = new HashSet<>();
+        foods.add(food);
+        world.setFoods(foods);
+
+        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
+        when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
+
+        // Act
+        this.playerService.move(player.getId(), newX , newY);
+
+        // Assert
+        verify(foodService).delete(food.getId());
+        assertEquals(player.getScore(), 1);
+    }
+
+    @Test
+    public void testEat_noFoodInRange() {
+        // Arrange
+        float newX = 10;
+        float newY = 10;
+
+        Player player = new Player();
+        player.setId(1);
+        player.setPos_x(100);
+        player.setPos_y(100);
+
+        World world = new World();
+        world.setX_dim(300);
+        world.setY_dim(300);
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
+
+        Food food = new Food();
+        food.setId(1);
+        food.setPos_x(1F);
+        food.setPos_y(1F);
+        Set<Food> foods = new HashSet<>();
+        foods.add(food);
+        world.setFoods(foods);
+
+        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
+        when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
+
+        // Act
+        this.playerService.move(player.getId(), newX , newY);
+
+        // Assert
+        assertEquals(player.getScore(), 0);
+        assertTrue(world.getFoods().contains(food));
+    }
+/*
+    @Test
+    public void testEat_TwoPlayersInRange() {
+        // Arrange
+        float newX = 10;
+        float newY = 10;
+
+        Player player = new Player();
+        player.setId(1);
+        player.setPos_x(100);
+        player.setPos_y(100);
+
+        Player player2 = new Player();
+        player2.setId(2);
+        player2.setPos_x(200);
+        player2.setPos_y(200);
+
+        World world = new World();
+        world.setId(1);
+        world.setX_dim(300);
+        world.setY_dim(300);
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        players.add(player2);
+        world.setPlayers(players);
+
+        Food food = new Food();
+        food.setId(1);
+        food.setPos_x(9.75F);
+        food.setPos_y(9.75F);
+        Set<Food> foods = new HashSet<>();
+        foods.add(food);
+        world.setFoods(foods);
+
+        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
+        when(playerRepository.findById(2)).thenReturn(Optional.of(player2));
+        when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
+        when(foodService.getById(1)).thenReturn(food);
+        when(foodRepository.findById(1)).thenReturn(Optional.of(food));
+
+        // Act
+        this.playerService.move(player.getId(), newX , newY);
+        this.playerService.move(player2.getId(), newX , newY);
+
+        // Assert
+        assertEquals(player.getScore(), 1); // First to move get the food
+        assertEquals(player2.getScore(), 0); // Sorry but no food for you
+        assertTrue(world.getFoods().contains(food));
+    }*/
 }
