@@ -11,7 +11,7 @@ import java.util.Set;
 public class World {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name="x_dim")
     private float x_dim;

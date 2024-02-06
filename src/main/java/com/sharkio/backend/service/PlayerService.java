@@ -82,26 +82,32 @@ public class PlayerService {
         player.setPos_y(newY);
         this.repository.save(player); // Save to prevent other player to move here while current player is eating
 
-        // Check if player can eat something
+        // Check if player can eat something and perform action
         Set<Food> foods = world.getFoods();
+        if(!foods.isEmpty()) {
+            this.eat(player, foods);
+        }
+
+        return this.getById(id);
+    }
+
+    private void eat(Player player, Set<Food> foods) {
         List<Integer> idsFoodsToRemove = new ArrayList<>();
 
-        for(Food f: foods) {
+        for (Food f : foods) {
             if (computeDistanceToFood(player, f) < EATING_RANGE) {
                 idsFoodsToRemove.add(f.getId());
             }
         }
 
         // remove all food in eating range
-        for(int idFood : idsFoodsToRemove) {
+        for (int idFood : idsFoodsToRemove) {
             this.foodService.delete(idFood);
             int newScore = player.getScore() + this.SCORE_POINTS;
             player.setScore(newScore);
         }
-
         // save in repository
         this.repository.save(player);
-        return this.getById(id);
     }
 
     private double computeDistanceToFood(Player player, Food f) {
