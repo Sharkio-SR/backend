@@ -1,14 +1,15 @@
-# Use a base image with Java 21 pre-installed
-FROM openjdk:21-slim
+# Utiliser une image de base Ubuntu
+FROM ubuntu:latest AS build
 
-# Create a working directory within the container
+# Installer Java et Maven
+RUN apt-get update && \
+    apt-get install -y openjdk-21-jdk maven
+
+# Créer un répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copy the application's jar file into the container
-COPY target/backend-0.0.1-SNAPSHOT.jar app.jar
+# Copier l'ensemble du projet dans le conteneur
+COPY . .
 
-# Expose the application's port (default for Spring Boot is 8080)
-EXPOSE 8080
-
-# Run the application when the container starts
-CMD [ "java", "-jar","app.jar" ]
+# Exécuter la commande mvn spring-boot:run pour démarrer l'application
+CMD [ "mvn", "spring-boot:run" ]
