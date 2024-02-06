@@ -14,7 +14,7 @@ import java.util.*;
 @Service
 public class WorldService {
     private final float X_DIM = 600;
-    private final float Y_DIM = 800;
+    private final float Y_DIM = 600;
     private final Integer NB_FOODS = 10;
 
     @Autowired

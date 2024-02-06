@@ -44,9 +44,8 @@ public class FoodService {
         throw new RuntimeException("Not allowed to add null food");
     }
 
-    public Food delete(Integer id) {
+    public void delete(Integer id) {
         Food food = this.getById(id);
-
         // Remove food from world first to avoid error
         World world = this.worldRepository.findAll().iterator().next();
         Set<Food> foods = world.getFoods();
@@ -55,7 +54,5 @@ public class FoodService {
         // update in database
         this.worldRepository.save(world);
         this.repository.delete(food);
-
-        return food;
     }
 }
