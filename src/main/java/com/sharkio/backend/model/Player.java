@@ -11,6 +11,9 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name="name")
+    private String name;
+
     @Column(name="pos_x")
     private float pos_x;
 
