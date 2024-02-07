@@ -23,7 +23,7 @@ public class PlayerService {
     @Autowired
     private FoodService foodService;
 
-    private final double EATING_RANGE = 0.5;
+    private final double EATING_RANGE = 10;
     private final int SCORE_POINTS = 1;
 
 
