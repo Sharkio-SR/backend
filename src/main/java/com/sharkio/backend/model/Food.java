@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name="Player")
-public class Player {
+@Table(name="Food")
+public class Food {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -16,8 +16,4 @@ public class Player {
 
     @Column(name="pos_y")
     private float pos_y;
-
-    @Column(name="score")
-    private int score;
 }
-

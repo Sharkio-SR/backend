@@ -21,6 +21,11 @@ public class PlayerController {
         return this.service.getById(id);
     }
 
+    @DeleteMapping("/{id}")
+    public Player deletePlayer(@PathVariable Integer id) {
+     return this.service.delete(id);
+    }
+
     @PutMapping("/{id}/move")
     public Player move(@PathVariable Integer id, @RequestParam float newX, @RequestParam float newY) {
         return this.service.move(id, newX, newY);

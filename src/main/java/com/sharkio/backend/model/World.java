@@ -11,7 +11,7 @@ import java.util.Set;
 public class World {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name="x_dim")
     private float x_dim;
@@ -24,4 +24,10 @@ public class World {
     joinColumns = @JoinColumn(name = "world_id"),
     inverseJoinColumns = @JoinColumn(name = "player_id"))
     private Set<Player> players;
+
+    @ManyToMany
+    @JoinTable(name = "World_Food",
+            joinColumns = @JoinColumn(name = "world_id"),
+            inverseJoinColumns = @JoinColumn(name = "food_id"))
+    private Set<Food> foods;
 }
