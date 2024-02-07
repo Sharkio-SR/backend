@@ -101,7 +101,7 @@ public class WorldServiceTests {
         when(playerServiceMock.addPlayer(any(Player.class))).thenReturn(player);
 
         // Act
-        Player savedPlayer = worldService.join();
+        Player savedPlayer = worldService.join("");
         Set<Player> savedPlayers = savedWorld.getPlayers();
 
         // Assert

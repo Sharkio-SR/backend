@@ -57,12 +57,13 @@ public class WorldService {
         return this.repository.findAll().iterator().next();
     }
 
-    public Player join() {
+    public Player join(String name) {
         World world = this.getWorld();
         Random random  = new Random();
 
         // Create new player with random coordinates
         Player new_player = new Player();
+        new_player.setName(name);
         new_player.setPos_x(random.nextFloat()* world.getX_dim());
         new_player.setPos_y(random.nextFloat()* world.getY_dim());
 
