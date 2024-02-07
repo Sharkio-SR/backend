@@ -25,6 +25,7 @@ public class PlayerService {
 
     private final double EATING_RANGE = 10;
     private final int SCORE_POINTS = 1;
+    private final float MOVE_RANGE = 4.5F;
 
 
     public Iterable<Player> getPlayers() {
@@ -75,6 +76,12 @@ public class PlayerService {
         // Assert coordinates are valid
         if(0 > newX || newX > world.getX_dim() || 0 > newY || newY > world.getY_dim()) {
          throw new RuntimeException("New coordinates are out of bound");
+        }
+
+        // Assert move is valid
+        if(!(player.getPos_x()-this.MOVE_RANGE <= newX && newX <= player.getPos_x()+this.MOVE_RANGE
+                && player.getPos_y()-this.MOVE_RANGE <= newY && newY <= player.getPos_y()+this.MOVE_RANGE)) {
+            throw new RuntimeException("Invalid move, stop trying tp");
         }
 
         // Change value
