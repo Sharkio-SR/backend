@@ -73,11 +73,6 @@ public class PlayerService {
         Player player = this.getById(id);
         World world = this.worldRepository.findAll().iterator().next();
 
-        System.out.println(player.getPos_x());
-        System.out.println(player.getPos_y());
-        System.out.println(newX);
-        System.out.println(newY);
-        System.out.println();
         // Assert coordinates are valid
         if(0 > newX || newX > world.getX_dim() || 0 > newY || newY > world.getY_dim()) {
          throw new RuntimeException("New coordinates are out of bound");
@@ -93,7 +88,6 @@ public class PlayerService {
         player.setPos_x(newX);
         player.setPos_y(newY);
         this.repository.save(player); // Save to prevent other player to move here while current player is eating
-        System.out.println("Done");
 
         // Check if player can eat something and perform action
         Set<Food> foods = world.getFoods();
