@@ -168,6 +168,7 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 99f;
         float newY = 200f;
+        float dt = 0.08f;
         Player player = new Player();
         player.setPos_x(98);
         player.setPos_y(197);
@@ -180,7 +181,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        Player movedPlayer = playerService.move(id, newX, newY);
+        Player movedPlayer = playerService.move(id, newX, newY, dt);
 
         // Assert
         Assert.assertEquals(newX, movedPlayer.getPos_x(), 0.001f);
@@ -195,7 +196,7 @@ public class PlayerServiceTests {
         when(playerRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> playerService.move(id, 0, 0));
+        assertThrows(RuntimeException.class, () -> playerService.move(id, 0, 0, 0.008f));
     }
 
     @Test
@@ -208,11 +209,13 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 1500.0f;
         float newY = 350.0f;
+        float dt = 0.008f;
+
         when(playerRepository.findById(id)).thenReturn(Optional.of(new Player()));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY));
+        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY, dt));
     }
 
     @Test
@@ -221,6 +224,7 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 11;
         float newY = 21;
+        float dt = 0.008f;
         Player player = new Player();
         player.setPos_x(10);
         player.setPos_y(20);
@@ -234,7 +238,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        Player movedPlayer = playerService.move(id, newX, newY);
+        Player movedPlayer = playerService.move(id, newX, newY, dt);
 
         // Assert
         Assert.assertEquals(newX, movedPlayer.getPos_x(), 0.001f);
@@ -248,6 +252,7 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 99f;
         float newY = 200f;
+        float dt = 0.008f;
         Player player = new Player();
         player.setPos_x(90);
         player.setPos_y(190);
@@ -260,7 +265,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY));
+        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY, dt));
     }
 
     @Test
@@ -297,6 +302,7 @@ public class PlayerServiceTests {
         // Arrange
         float newX = 9.5f;
         float newY = 9.5f;
+        float dt = 0.008f;
 
         Player player = new Player();
         player.setId(1);
@@ -322,7 +328,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        this.playerService.move(player.getId(), newX , newY);
+        this.playerService.move(player.getId(), newX , newY, dt);
 
         // Assert
         verify(foodService).delete(food.getId());
@@ -334,6 +340,7 @@ public class PlayerServiceTests {
         // Arrange
         float newX = 99;
         float newY = 99;
+        float dt = 0.008f;
 
         Player player = new Player();
         player.setId(1);
@@ -359,7 +366,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        this.playerService.move(player.getId(), newX , newY);
+        this.playerService.move(player.getId(), newX , newY, dt);
 
         // Assert
         assertEquals(player.getScore(), 0);
