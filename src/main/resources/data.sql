@@ -5,7 +5,8 @@ DROP TABLE IF EXISTS World_Player;
 CREATE TABLE World (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     x_dim FLOAT NOT NULL,
-    y_dim FLOAT NOT NULL
+    y_dim FLOAT NOT NULL,
+    state ENUM('finished', 'running') NOT NULL DEFAULT 'running'
 );
 
 CREATE TABLE Player (

@@ -1,5 +1,6 @@
 package com.sharkio.backend.service;
 
+import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.model.Food;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
@@ -79,36 +80,45 @@ public class PlayerService {
 
     public Player move(int id, float newX, float newY) {
         // get player and world
-        Player player = this.getById(id);
         World world = this.worldRepository.findAll().iterator().next();
 
-        int validation = is_valid_move(player, world, newX, newY);
+        if(world.getState() == WorldState.RUNNING) {
+            Player player = this.getById(id);
 
-        if (validation==3) {
-            int posibilities = tryOtherMove(player, world, newX, newY);
-            if (posibilities==1) {
-                newY = player.getPos_y();
-            } else if (posibilities==0) {
-                newX = player.getPos_x();
-            }
-        }
+            int validation = is_valid_move(player, world, newX, newY);
 
-        validation = is_valid_move(player, world, newX, newY);
-        if(validation == 0) {
-            // Change value
-            player.setPos_x(newX);
-            player.setPos_y(newY);
-            this.repository.save(player); // Save to prevent other player to move here while current player is eating
-
-            // Check if player can eat something and perform action
-            Set<Food> foods = world.getFoods();
-            if(!foods.isEmpty()) {
-                this.eat(player, foods);
+            if (validation == 3) {
+                int possibilities = tryOtherMove(player, world, newX, newY);
+                if (possibilities == 1) {
+                    newY = player.getPos_y();
+                } else if (possibilities == 0) {
+                    newX = player.getPos_x();
+                }
             }
 
-            return this.getById(id);
+            validation = is_valid_move(player, world, newX, newY);
+            if (validation == 0) {
+                // Change value
+                player.setPos_x(newX);
+                player.setPos_y(newY);
+                this.repository.save(player); // Save to prevent other player to move here while current player is eating
+
+                // Check if player can eat something and perform action
+                Set<Food> foods = world.getFoods();
+                if (!foods.isEmpty()) {
+                    this.eat(player, foods);
+                }
+
+                if (player.getScore() >= 50) {
+                    world.setState(WorldState.FINISHED);
+                    worldRepository.save(world);
+                }
+
+                return this.getById(id);
+            }
+            throw new RuntimeException("Move invalid : " + this.MOVE_ERRORS.get(validation - 1));
         }
-        throw new RuntimeException("Move invalid : " + this.MOVE_ERRORS.get(validation-1));
+        throw new RuntimeException("No current game running");
     }
 
     private int tryOtherMove(Player player, World world, float newX, float newY) {

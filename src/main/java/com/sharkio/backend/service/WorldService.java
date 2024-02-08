@@ -3,6 +3,7 @@ package com.sharkio.backend.service;
 import com.sharkio.backend.model.Food;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
+import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.repository.WorldRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ public class WorldService {
         world.setX_dim(this.X_DIM);
         world.setY_dim(this.Y_DIM);
         world.setPlayers(new HashSet<>());
+        world.setState(WorldState.RUNNING);
 
         Set<Food> foods = new HashSet<>();
         for(int i=0; i<this.NB_FOODS; i++) {
@@ -45,6 +47,10 @@ public class WorldService {
         this.repository.save(world);
 
         return world;
+    }
+
+    public Boolean getState() {
+        return this.getWorld().getState() == WorldState.RUNNING;
     }
 
     public World getWorld() {

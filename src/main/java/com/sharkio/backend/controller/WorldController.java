@@ -19,6 +19,11 @@ public class WorldController {
         return this.service.getWorld();
     }
 
+    @GetMapping("/state")
+    public Boolean getState(){
+        return this.service.getState();
+    }
+
     @PostMapping("/join")
     public Player join(@RequestParam String name) {
         return this.service.join(name);
