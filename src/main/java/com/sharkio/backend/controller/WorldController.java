@@ -4,9 +4,7 @@ import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.service.WorldService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -21,8 +19,8 @@ public class WorldController {
         return this.service.getWorld();
     }
 
-    @GetMapping("/join")
-    public Player join() {
-        return this.service.join();
+    @PostMapping("/join")
+    public Player join(@RequestParam String name) {
+        return this.service.join(name);
     }
 }
