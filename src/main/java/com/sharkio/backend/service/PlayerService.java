@@ -6,7 +6,10 @@ import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.PlayerRepository;
 import com.sharkio.backend.repository.WorldRepository;
 import java.awt.geom.Rectangle2D;
+
+import jakarta.persistence.Tuple;
 import lombok.Data;
+import org.hibernate.sql.results.internal.TupleImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,12 +77,23 @@ public class PlayerService {
         return player;
     }
 
-    public Player move(int id, float newX, float newY, float dt) {
+    public Player move(int id, float newX, float newY) {
         // get player and world
         Player player = this.getById(id);
         World world = this.worldRepository.findAll().iterator().next();
 
-        int validation = is_valid_move(player, world, newX, newY, dt);
+        int validation = is_valid_move(player, world, newX, newY);
+
+        if (validation==3) {
+            int posibilities = tryOtherMove(player, world, newX, newY);
+            if (posibilities==1) {
+                newY = player.getPos_y();
+            } else if (posibilities==0) {
+                newX = player.getPos_x();
+            }
+        }
+
+        validation = is_valid_move(player, world, newX, newY);
         if(validation == 0) {
             // Change value
             player.setPos_x(newX);
@@ -97,6 +111,15 @@ public class PlayerService {
         throw new RuntimeException("Move invalid : " + this.MOVE_ERRORS.get(validation-1));
     }
 
+    private int tryOtherMove(Player player, World world, float newX, float newY) {
+        if(is_valid_move(player, world, newX, player.getPos_y())==0) {
+            return 1;
+        } else if (is_valid_move(player, world, player.getPos_x(), newY)==0) {
+            return 0;
+        }
+        return -1;
+    }
+
     private boolean checkIfCollision(Player p, float newX, float newY) {
         Rectangle2D rect1 = new Rectangle2D.Float(newX- getIMG_MID_WITH(), newY-
             getIMG_MID_HEIGHT(), getIMG_MID_WITH()*2, getIMG_MID_HEIGHT()*2);
@@ -106,7 +129,7 @@ public class PlayerService {
         return rect1.intersects(rect2);
     }
 
-    private int is_valid_move(Player player, World world, float newX, float newY, float dt) {
+    private int is_valid_move(Player player, World world, float newX, float newY) {
         // Assert coordinates are valid
         if(0 > newX || newX > world.getX_dim() || 0 > newY || newY > world.getY_dim()) {
             return 1;

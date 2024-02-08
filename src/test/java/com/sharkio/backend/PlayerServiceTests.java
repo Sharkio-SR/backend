@@ -168,11 +168,14 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 99f;
         float newY = 200f;
-        float dt = 0.08f;
         Player player = new Player();
+        player.setId(id);
         player.setPos_x(98);
         player.setPos_y(197);
         World world = new World();
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
         world.setX_dim(100);
         world.setY_dim(200);
         world.setFoods(new HashSet<>());
@@ -181,7 +184,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        Player movedPlayer = playerService.move(id, newX, newY, dt);
+        Player movedPlayer = playerService.move(id, newX, newY);
 
         // Assert
         Assert.assertEquals(newX, movedPlayer.getPos_x(), 0.001f);
@@ -196,7 +199,7 @@ public class PlayerServiceTests {
         when(playerRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> playerService.move(id, 0, 0, 0.008f));
+        assertThrows(RuntimeException.class, () -> playerService.move(id, 0, 0));
     }
 
     @Test
@@ -209,13 +212,12 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 1500.0f;
         float newY = 350.0f;
-        float dt = 0.008f;
 
         when(playerRepository.findById(id)).thenReturn(Optional.of(new Player()));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY, dt));
+        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY));
     }
 
     @Test
@@ -224,21 +226,25 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 11;
         float newY = 21;
-        float dt = 0.008f;
         Player player = new Player();
+        player.setId(1);
         player.setPos_x(10);
         player.setPos_y(20);
 
         World world = new World();
         world.setX_dim(300);
         world.setY_dim(300);
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
+
         world.setFoods(new HashSet<>());
 
         when(playerRepository.findById(id)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        Player movedPlayer = playerService.move(id, newX, newY, dt);
+        Player movedPlayer = playerService.move(id, newX, newY);
 
         // Assert
         Assert.assertEquals(newX, movedPlayer.getPos_x(), 0.001f);
@@ -252,7 +258,6 @@ public class PlayerServiceTests {
         Integer id = 1;
         float newX = 99f;
         float newY = 200f;
-        float dt = 0.008f;
         Player player = new Player();
         player.setPos_x(90);
         player.setPos_y(190);
@@ -265,7 +270,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act and Assert
-        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY, dt));
+        assertThrows(RuntimeException.class, () -> playerService.move(id, newX, newY));
     }
 
     @Test
@@ -302,7 +307,6 @@ public class PlayerServiceTests {
         // Arrange
         float newX = 9.5f;
         float newY = 9.5f;
-        float dt = 0.008f;
 
         Player player = new Player();
         player.setId(1);
@@ -328,7 +332,7 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        this.playerService.move(player.getId(), newX , newY, dt);
+        this.playerService.move(player.getId(), newX , newY);
 
         // Assert
         verify(foodService).delete(food.getId());
@@ -340,7 +344,6 @@ public class PlayerServiceTests {
         // Arrange
         float newX = 99;
         float newY = 99;
-        float dt = 0.008f;
 
         Player player = new Player();
         player.setId(1);
@@ -366,59 +369,10 @@ public class PlayerServiceTests {
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
 
         // Act
-        this.playerService.move(player.getId(), newX , newY, dt);
+        this.playerService.move(player.getId(), newX , newY);
 
         // Assert
         assertEquals(player.getScore(), 0);
         assertTrue(world.getFoods().contains(food));
     }
-/*
-    @Test
-    public void testEat_TwoPlayersInRange() {
-        // Arrange
-        float newX = 10;
-        float newY = 10;
-
-        Player player = new Player();
-        player.setId(1);
-        player.setPos_x(100);
-        player.setPos_y(100);
-
-        Player player2 = new Player();
-        player2.setId(2);
-        player2.setPos_x(200);
-        player2.setPos_y(200);
-
-        World world = new World();
-        world.setId(1);
-        world.setX_dim(300);
-        world.setY_dim(300);
-        Set<Player> players = new HashSet<>();
-        players.add(player);
-        players.add(player2);
-        world.setPlayers(players);
-
-        Food food = new Food();
-        food.setId(1);
-        food.setPos_x(9.75F);
-        food.setPos_y(9.75F);
-        Set<Food> foods = new HashSet<>();
-        foods.add(food);
-        world.setFoods(foods);
-
-        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
-        when(playerRepository.findById(2)).thenReturn(Optional.of(player2));
-        when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
-        when(foodService.getById(1)).thenReturn(food);
-        when(foodRepository.findById(1)).thenReturn(Optional.of(food));
-
-        // Act
-        this.playerService.move(player.getId(), newX , newY);
-        this.playerService.move(player2.getId(), newX , newY);
-
-        // Assert
-        assertEquals(player.getScore(), 1); // First to move get the food
-        assertEquals(player2.getScore(), 0); // Sorry but no food for you
-        assertTrue(world.getFoods().contains(food));
-    }*/
 }
