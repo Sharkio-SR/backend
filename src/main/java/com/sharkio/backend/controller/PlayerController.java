@@ -27,7 +27,7 @@ public class PlayerController {
     }
 
     @PutMapping("/{id}/move")
-    public Player move(@PathVariable Integer id, @RequestParam float newX, @RequestParam float newY) {
-        return this.service.move(id, newX, newY);
+    public Player move(@PathVariable Integer id, @RequestParam float newX, @RequestParam float newY, @RequestParam float dt) {
+        return this.service.move(id, newX, newY, dt);
     }
 }

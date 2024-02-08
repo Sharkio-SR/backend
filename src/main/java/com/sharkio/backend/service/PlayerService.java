@@ -25,7 +25,7 @@ public class PlayerService {
 
     private final double EATING_RANGE = 10;
     private final int SCORE_POINTS = 1;
-    private final float MOVE_RANGE = 4.5F;
+    private final float MOVE_CONSTRAINT = 300;
 
 
     public Iterable<Player> getPlayers() {
@@ -68,7 +68,7 @@ public class PlayerService {
         return player;
     }
 
-    public Player move(int id, float newX, float newY) {
+    public Player move(int id, float newX, float newY, float dt) {
         // get player and world
         Player player = this.getById(id);
         World world = this.worldRepository.findAll().iterator().next();
@@ -79,8 +79,9 @@ public class PlayerService {
         }
 
         // Assert move is valid
-        if(!(player.getPos_x()-this.MOVE_RANGE <= newX && newX <= player.getPos_x()+this.MOVE_RANGE
-                && player.getPos_y()-this.MOVE_RANGE <= newY && newY <= player.getPos_y()+this.MOVE_RANGE)) {
+        float move_range = this.MOVE_CONSTRAINT * dt;
+        if(!(player.getPos_x()-move_range <= newX && newX <= player.getPos_x()+move_range
+                && player.getPos_y()-move_range <= newY && newY <= player.getPos_y()+move_range)) {
             throw new RuntimeException("Invalid move, stop trying tp");
         }
 
