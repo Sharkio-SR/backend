@@ -32,6 +32,7 @@ public class WorldService {
         world.setX_dim(this.X_DIM);
         world.setY_dim(this.Y_DIM);
         world.setPlayers(new HashSet<>());
+        world.setState(WorldState.RUNNING);
 
         Set<Food> foods = new HashSet<>();
         for(int i=0; i<this.NB_FOODS; i++) {

@@ -1,5 +1,6 @@
 package com.sharkio.backend;
 
+import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.model.Food;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
@@ -173,6 +174,7 @@ public class PlayerServiceTests {
         player.setPos_x(98);
         player.setPos_y(197);
         World world = new World();
+        world.setState(WorldState.RUNNING);
         Set<Player> players = new HashSet<>();
         players.add(player);
         world.setPlayers(players);
@@ -232,6 +234,7 @@ public class PlayerServiceTests {
         player.setPos_y(20);
 
         World world = new World();
+        world.setState(WorldState.RUNNING);
         world.setX_dim(300);
         world.setY_dim(300);
         Set<Player> players = new HashSet<>();
@@ -314,6 +317,7 @@ public class PlayerServiceTests {
         player.setPos_y(11);
 
         World world = new World();
+        world.setState(WorldState.RUNNING);
         world.setX_dim(300);
         world.setY_dim(300);
         Set<Player> players = new HashSet<>();
@@ -351,6 +355,7 @@ public class PlayerServiceTests {
         player.setPos_y(100);
 
         World world = new World();
+        world.setState(WorldState.RUNNING);
         world.setX_dim(300);
         world.setY_dim(300);
         Set<Player> players = new HashSet<>();
@@ -374,5 +379,70 @@ public class PlayerServiceTests {
         // Assert
         assertEquals(player.getScore(), 0);
         assertTrue(world.getFoods().contains(food));
+    }
+
+    @Test
+    public void testMove_World_finish() {
+        // Arrange
+        float newX = 99;
+        float newY = 99;
+
+        Player player = new Player();
+        player.setId(1);
+        player.setScore(49);
+        player.setPos_x(100);
+        player.setPos_y(100);
+
+        World world = new World();
+        world.setState(WorldState.RUNNING);
+        world.setX_dim(300);
+        world.setY_dim(300);
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
+
+        Food food = new Food();
+        food.setId(1);
+        food.setPos_x(newX);
+        food.setPos_y(newY);
+        Set<Food> foods = new HashSet<>();
+        foods.add(food);
+        world.setFoods(foods);
+
+        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
+        when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
+
+        // Act
+        this.playerService.move(player.getId(), newX , newY);
+
+        // Assert
+        assertEquals(world.getState(), WorldState.FINISHED);
+    }
+
+    @Test
+    public void testMove_World_is_finished() {
+        // Arrange
+        float newX = 99;
+        float newY = 99;
+
+        Player player = new Player();
+        player.setId(1);
+        player.setScore(49);
+        player.setPos_x(100);
+        player.setPos_y(100);
+
+        World world = new World();
+        world.setState(WorldState.FINISHED);
+        world.setX_dim(300);
+        world.setY_dim(300);
+        Set<Player> players = new HashSet<>();
+        players.add(player);
+        world.setPlayers(players);
+
+        when(playerRepository.findById(1)).thenReturn(Optional.of(player));
+        when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
+
+        // Act and assert
+        assertThrows(RuntimeException.class, () -> this.playerService.move(player.getId(), newX , newY));
     }
 }
