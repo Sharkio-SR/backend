@@ -1,6 +1,7 @@
 package com.sharkio.backend.service;
 
 import com.sharkio.backend.model.Food;
+import com.sharkio.backend.model.Mine;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.enums.WorldState;
@@ -18,6 +19,7 @@ public class WorldService {
     private final float X_DIM = 600;
     private final float Y_DIM = 600;
     private final Integer NB_FOODS = 10;
+    private final Integer NB_MINES = 5;
     private final float REQUIRED_SPAWN_AREA = 60.00f;
     private final int MAX_JOIN_TRIES = 200;
 
@@ -28,6 +30,8 @@ public class WorldService {
     private PlayerService playerService;
     @Autowired
     private FoodService foodService;
+    @Autowired
+    private MineService mineService;
 
     private World initWorld() {
         Random random  = new Random();
@@ -45,7 +49,18 @@ public class WorldService {
             this.foodService.addFood(f);
             foods.add(f);
         }
+
+        Set<Mine> mines = new HashSet<>();
+        for(int i=0; i<this.NB_MINES; i++) {
+            Mine m = new Mine();
+            m.setPos_x(random.nextFloat()* world.getX_dim());
+            m.setPos_y(random.nextFloat()* world.getY_dim());
+            this.mineService.addMine(m);
+            mines.add(m);
+        }
+
         world.setFoods(foods);
+        world.setMines(mines);
 
         this.repository.save(world);
 
