@@ -8,6 +8,7 @@ import com.sharkio.backend.repository.FoodRepository;
 import com.sharkio.backend.repository.PlayerRepository;
 import com.sharkio.backend.repository.WorldRepository;
 import com.sharkio.backend.service.FoodService;
+import com.sharkio.backend.service.MineService;
 import com.sharkio.backend.service.PlayerService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,7 +40,7 @@ public class PlayerServiceTests {
     private FoodService foodService;
 
     @Mock
-    private FoodRepository foodRepository;
+    private MineService mineService;
 
     @InjectMocks
     private PlayerService playerService;
@@ -181,6 +182,7 @@ public class PlayerServiceTests {
         world.setX_dim(100);
         world.setY_dim(200);
         world.setFoods(new HashSet<>());
+        world.setMines(new HashSet<>());
 
         when(playerRepository.findById(id)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
@@ -242,6 +244,7 @@ public class PlayerServiceTests {
         world.setPlayers(players);
 
         world.setFoods(new HashSet<>());
+        world.setMines(new HashSet<>());
 
         when(playerRepository.findById(id)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
@@ -331,6 +334,7 @@ public class PlayerServiceTests {
         Set<Food> foods = new HashSet<>();
         foods.add(food);
         world.setFoods(foods);
+        world.setMines(new HashSet<>());
 
         when(playerRepository.findById(1)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
@@ -369,6 +373,7 @@ public class PlayerServiceTests {
         Set<Food> foods = new HashSet<>();
         foods.add(food);
         world.setFoods(foods);
+        world.setMines(new HashSet<>());
 
         when(playerRepository.findById(1)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
@@ -408,6 +413,7 @@ public class PlayerServiceTests {
         Set<Food> foods = new HashSet<>();
         foods.add(food);
         world.setFoods(foods);
+        world.setMines(new HashSet<>());
 
         when(playerRepository.findById(1)).thenReturn(Optional.of(player));
         when(worldRepository.findAll()).thenReturn(Collections.singletonList(world));
