@@ -5,6 +5,7 @@ import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.WorldRepository;
 import com.sharkio.backend.service.FoodService;
+import com.sharkio.backend.service.MineService;
 import com.sharkio.backend.service.PlayerService;
 import com.sharkio.backend.service.WorldService;
 import org.junit.Test;
@@ -27,6 +28,9 @@ public class WorldServiceTests {
 
     @Mock
     private PlayerService playerServiceMock;
+
+    @Mock
+    private MineService mineService;
 
     @Mock
     private FoodService foodService;

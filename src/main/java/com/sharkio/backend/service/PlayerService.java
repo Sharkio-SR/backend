@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 @Data
@@ -187,6 +188,12 @@ public class PlayerService {
             this.foodService.delete(idFood);
             int newScore = player.getScore() + this.SCORE_POINTS;
             player.setScore(newScore);
+
+            if (Math.random()<0.8) {
+                this.respawnFish();
+            } else {
+                this.respawnMine();
+            }
         }
         // save in repository
         this.repository.save(player);
@@ -206,9 +213,43 @@ public class PlayerService {
             this.mineService.delete(idMine);
             int newScore = player.getScore() - this.PENALTY;
             player.setScore(newScore);
+
+            if (Math.random()<0.2) {
+                this.respawnFish();
+            } else {
+                this.respawnMine();
+            }
         }
         // save in repository
         this.repository.save(player);
+    }
+
+    private void respawnMine() {
+        Mine mine = new Mine();
+        Random random  = new Random();
+        World world = worldRepository.findAll().iterator().next();
+
+        mine.setPos_x(random.nextFloat()* world.getX_dim());
+        mine.setPos_y(random.nextFloat()* world.getY_dim());
+        mineService.addMine(mine);
+
+        Set<Mine> mines = world.getMines();
+        mines.add(mine);
+        world.setMines(mines);
+    }
+
+    private void respawnFish() {
+        Food food = new Food();
+        Random random  = new Random();
+        World world = worldRepository.findAll().iterator().next();
+
+        food.setPos_x(random.nextFloat()* world.getX_dim());
+        food.setPos_y(random.nextFloat()* world.getY_dim());
+        foodService.addFood(food);
+
+        Set<Food> foods = world.getFoods();
+        foods.add(food);
+        worldRepository.save(world);
     }
 
     private float computeDistance(float x1, float y1, float x2, float y2) {
