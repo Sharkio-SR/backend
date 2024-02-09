@@ -2,8 +2,10 @@ package com.sharkio.backend.service;
 
 import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.model.Food;
+import com.sharkio.backend.model.Mine;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
+import com.sharkio.backend.repository.MineRepository;
 import com.sharkio.backend.repository.PlayerRepository;
 import com.sharkio.backend.repository.WorldRepository;
 import java.awt.geom.Rectangle2D;
@@ -27,9 +29,12 @@ public class PlayerService {
     private WorldRepository worldRepository;
     @Autowired
     private FoodService foodService;
+    @Autowired
+    private MineService mineService;
 
     private final double EATING_RANGE = 10;
     private final int SCORE_POINTS = 1;
+    private final int PENALTY = 2;
     private final float MOVE_RANGE = 4;
     private final float PLAYER_HITBOX_RANGE = 27;
     private final int IMG_MID_WITH = 30;
@@ -109,6 +114,12 @@ public class PlayerService {
                     this.eat(player, foods);
                 }
 
+                // Check if player eat a mine and perform explosion
+                Set<Mine> mines = world.getMines();
+                if(!mines.isEmpty()) {
+                    this.explode(player, mines);
+                }
+
                 if (player.getScore() >= 50) {
                     world.setState(WorldState.FINISHED);
                     worldRepository.save(world);
@@ -175,6 +186,25 @@ public class PlayerService {
         for (int idFood : idsFoodsToRemove) {
             this.foodService.delete(idFood);
             int newScore = player.getScore() + this.SCORE_POINTS;
+            player.setScore(newScore);
+        }
+        // save in repository
+        this.repository.save(player);
+    }
+
+    private void explode(Player player, Set<Mine> mines) {
+        List<Integer> idsMinesToRemove = new ArrayList<>();
+
+        for (Mine m : mines) {
+            if (computeDistance(player.getPos_x(), player.getPos_y(), m.getPos_x(), m.getPos_y()) < EATING_RANGE) {
+                idsMinesToRemove.add(m.getId());
+            }
+        }
+
+        // remove all food in eating range
+        for (int idMine : idsMinesToRemove) {
+            this.mineService.delete(idMine);
+            int newScore = player.getScore() - this.PENALTY;
             player.setScore(newScore);
         }
         // save in repository
