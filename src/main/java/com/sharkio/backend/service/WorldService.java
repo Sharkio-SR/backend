@@ -64,6 +64,10 @@ public class WorldService {
     }
 
     public Player join(String name) {
+        if(this.getWorld().getState()==WorldState.FINISHED) {
+            this.reset(this.getWorld());
+        }
+
         World world = this.getWorld();
         Random random  = new Random();
 
@@ -82,5 +86,18 @@ public class WorldService {
         this.repository.save(world);
 
         return saved_player;
+    }
+
+    private void reset(World world) {
+        List<Integer> foodIds = new ArrayList<>();
+        List<Integer> playerIds = new ArrayList<>();
+
+        for (Food food : world.getFoods()) { foodIds.add(food.getId()); }
+        for (Player player : world.getPlayers()) { playerIds.add(player.getId()); }
+
+        for(Integer id: foodIds) {this.foodService.delete(id);}
+        for(Integer id: playerIds) {this.playerService.delete(id);}
+
+        this.repository.delete(world);
     }
 }

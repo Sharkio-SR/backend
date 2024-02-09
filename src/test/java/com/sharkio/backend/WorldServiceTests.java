@@ -1,5 +1,6 @@
 package com.sharkio.backend;
 
+import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.WorldRepository;
