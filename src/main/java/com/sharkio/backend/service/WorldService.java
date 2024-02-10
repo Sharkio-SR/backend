@@ -126,12 +126,15 @@ public class WorldService {
     private void reset(World world) {
         List<Integer> foodIds = new ArrayList<>();
         List<Integer> playerIds = new ArrayList<>();
+        List<Integer> minesIds = new ArrayList<>();
 
         for (Food food : world.getFoods()) { foodIds.add(food.getId()); }
         for (Player player : world.getPlayers()) { playerIds.add(player.getId()); }
+        for (Mine mine : world.getMines()) { minesIds.add(mine.getId()); }
 
         for(Integer id: foodIds) {this.foodService.delete(id);}
         for(Integer id: playerIds) {this.playerService.delete(id);}
+        for(Integer id: minesIds) {this.mineService.delete(id);}
 
         this.repository.delete(world);
     }
