@@ -18,8 +18,8 @@ import java.util.*;
 public class WorldService {
     private final float X_DIM = 600;
     private final float Y_DIM = 600;
-    private final Integer NB_FOODS = 10;
-    private final Integer NB_MINES = 5;
+    private final Integer NB_FOODS = 20;
+    private final Integer NB_MINES = 10;
     private final float REQUIRED_SPAWN_AREA = 60.00f;
     private final int MAX_JOIN_TRIES = 200;
 
