@@ -1,8 +1,11 @@
 package com.sharkio.backend.service;
 
+import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.model.Food;
+import com.sharkio.backend.model.Mine;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
+import com.sharkio.backend.repository.MineRepository;
 import com.sharkio.backend.repository.PlayerRepository;
 import com.sharkio.backend.repository.WorldRepository;
 import java.awt.geom.Rectangle2D;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 @Data
@@ -26,9 +30,12 @@ public class PlayerService {
     private WorldRepository worldRepository;
     @Autowired
     private FoodService foodService;
+    @Autowired
+    private MineService mineService;
 
     private final double EATING_RANGE = 10;
     private final int SCORE_POINTS = 1;
+    private final int PENALTY = 2;
     private final float MOVE_RANGE = 4;
     private final float PLAYER_HITBOX_RANGE = 27;
     private final int IMG_MID_WITH = 30;
@@ -79,36 +86,51 @@ public class PlayerService {
 
     public Player move(int id, float newX, float newY) {
         // get player and world
-        Player player = this.getById(id);
         World world = this.worldRepository.findAll().iterator().next();
 
-        int validation = is_valid_move(player, world, newX, newY);
+        if(world.getState() == WorldState.RUNNING) {
+            Player player = this.getById(id);
 
-        if (validation==3) {
-            int posibilities = tryOtherMove(player, world, newX, newY);
-            if (posibilities==1) {
-                newY = player.getPos_y();
-            } else if (posibilities==0) {
-                newX = player.getPos_x();
-            }
-        }
+            int validation = is_valid_move(player, world, newX, newY);
 
-        validation = is_valid_move(player, world, newX, newY);
-        if(validation == 0) {
-            // Change value
-            player.setPos_x(newX);
-            player.setPos_y(newY);
-            this.repository.save(player); // Save to prevent other player to move here while current player is eating
-
-            // Check if player can eat something and perform action
-            Set<Food> foods = world.getFoods();
-            if(!foods.isEmpty()) {
-                this.eat(player, foods);
+            if (validation == 3) {
+                int possibilities = tryOtherMove(player, world, newX, newY);
+                if (possibilities == 1) {
+                    newY = player.getPos_y();
+                } else if (possibilities == 0) {
+                    newX = player.getPos_x();
+                }
             }
 
-            return this.getById(id);
+            validation = is_valid_move(player, world, newX, newY);
+            if (validation == 0) {
+                // Change value
+                player.setPos_x(newX);
+                player.setPos_y(newY);
+                this.repository.save(player); // Save to prevent other player to move here while current player is eating
+
+                // Check if player can eat something and perform action
+                Set<Food> foods = world.getFoods();
+                if (!foods.isEmpty()) {
+                    this.eat(player, foods);
+                }
+
+                // Check if player eat a mine and perform explosion
+                Set<Mine> mines = world.getMines();
+                if(!mines.isEmpty()) {
+                    this.explode(player, mines);
+                }
+
+                if (player.getScore() >= 50) {
+                    world.setState(WorldState.FINISHED);
+                    worldRepository.save(world);
+                }
+
+                return this.getById(id);
+            }
+            throw new RuntimeException("Move invalid : " + this.MOVE_ERRORS.get(validation - 1));
         }
-        throw new RuntimeException("Move invalid : " + this.MOVE_ERRORS.get(validation-1));
+        throw new RuntimeException("No current game running");
     }
 
     private int tryOtherMove(Player player, World world, float newX, float newY) {
@@ -166,9 +188,68 @@ public class PlayerService {
             this.foodService.delete(idFood);
             int newScore = player.getScore() + this.SCORE_POINTS;
             player.setScore(newScore);
+
+            if (Math.random()<0.8) {
+                this.respawnFish();
+            } else {
+                this.respawnMine();
+            }
         }
         // save in repository
         this.repository.save(player);
+    }
+
+    private void explode(Player player, Set<Mine> mines) {
+        List<Integer> idsMinesToRemove = new ArrayList<>();
+
+        for (Mine m : mines) {
+            if (computeDistance(player.getPos_x(), player.getPos_y(), m.getPos_x(), m.getPos_y()) < EATING_RANGE) {
+                idsMinesToRemove.add(m.getId());
+            }
+        }
+
+        // remove all food in eating range
+        for (int idMine : idsMinesToRemove) {
+            this.mineService.delete(idMine);
+            int newScore = player.getScore() - this.PENALTY;
+            player.setScore(newScore);
+
+            if (Math.random()<0.2) {
+                this.respawnFish();
+            } else {
+                this.respawnMine();
+            }
+        }
+        // save in repository
+        this.repository.save(player);
+    }
+
+    private void respawnMine() {
+        Mine mine = new Mine();
+        Random random  = new Random();
+        World world = worldRepository.findAll().iterator().next();
+
+        mine.setPos_x(random.nextFloat()* world.getX_dim());
+        mine.setPos_y(random.nextFloat()* world.getY_dim());
+        mineService.addMine(mine);
+
+        Set<Mine> mines = world.getMines();
+        mines.add(mine);
+        world.setMines(mines);
+    }
+
+    private void respawnFish() {
+        Food food = new Food();
+        Random random  = new Random();
+        World world = worldRepository.findAll().iterator().next();
+
+        food.setPos_x(random.nextFloat()* world.getX_dim());
+        food.setPos_y(random.nextFloat()* world.getY_dim());
+        foodService.addFood(food);
+
+        Set<Food> foods = world.getFoods();
+        foods.add(food);
+        worldRepository.save(world);
     }
 
     private float computeDistance(float x1, float y1, float x2, float y2) {

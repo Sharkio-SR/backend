@@ -1,13 +1,16 @@
 package com.sharkio.backend.service;
 
 import com.sharkio.backend.model.Food;
+import com.sharkio.backend.model.Mine;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
+import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.repository.WorldRepository;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 
 @Data
@@ -15,7 +18,10 @@ import java.util.*;
 public class WorldService {
     private final float X_DIM = 600;
     private final float Y_DIM = 600;
-    private final Integer NB_FOODS = 10;
+    private final Integer NB_FOODS = 20;
+    private final Integer NB_MINES = 10;
+    private final float REQUIRED_SPAWN_AREA = 60.00f;
+    private final int MAX_JOIN_TRIES = 200;
 
     @Autowired
     private WorldRepository repository;
@@ -24,6 +30,8 @@ public class WorldService {
     private PlayerService playerService;
     @Autowired
     private FoodService foodService;
+    @Autowired
+    private MineService mineService;
 
     private World initWorld() {
         Random random  = new Random();
@@ -31,6 +39,7 @@ public class WorldService {
         world.setX_dim(this.X_DIM);
         world.setY_dim(this.Y_DIM);
         world.setPlayers(new HashSet<>());
+        world.setState(WorldState.RUNNING);
 
         Set<Food> foods = new HashSet<>();
         for(int i=0; i<this.NB_FOODS; i++) {
@@ -40,11 +49,26 @@ public class WorldService {
             this.foodService.addFood(f);
             foods.add(f);
         }
+
+        Set<Mine> mines = new HashSet<>();
+        for(int i=0; i<this.NB_MINES; i++) {
+            Mine m = new Mine();
+            m.setPos_x(random.nextFloat()* world.getX_dim());
+            m.setPos_y(random.nextFloat()* world.getY_dim());
+            this.mineService.addMine(m);
+            mines.add(m);
+        }
+
         world.setFoods(foods);
+        world.setMines(mines);
 
         this.repository.save(world);
 
         return world;
+    }
+
+    public Boolean getState() {
+        return this.getWorld().getState() == WorldState.RUNNING;
     }
 
     public World getWorld() {
@@ -58,23 +82,71 @@ public class WorldService {
     }
 
     public Player join(String name) {
+        if(this.getWorld().getState()==WorldState.FINISHED) {
+            this.reset(this.getWorld());
+        }
+
         World world = this.getWorld();
         Random random  = new Random();
 
-        // Create new player with random coordinates
-        Player new_player = new Player();
-        new_player.setName(name);
-        new_player.setPos_x(random.nextFloat()* world.getX_dim());
-        new_player.setPos_y(random.nextFloat()* world.getY_dim());
+        // Create new random coordinates
+        float newX = random.nextFloat()* world.getX_dim();
+        float newY = random.nextFloat()* world.getY_dim();
+        int iter = 0;
+        if(checkIfSpawnIsIncorrect(newX, newY)) {
+            throw new RuntimeException("Can't join, there are too many sharks in the sea");
+        } else {
+            // while the coordinates are invalid => get new values
+            while (checkIfSpawnIsIncorrect(newX, newY) && iter<this.MAX_JOIN_TRIES) {
+                iter ++;
+                newX = random.nextFloat()* world.getX_dim();
+                newY = random.nextFloat()* world.getY_dim();
+            }
+            //System.out.println(iter + " | " + checkIfSpawnIsCorrect(newX, newY));
+            if(iter==this.MAX_JOIN_TRIES-1) {
+                throw new RuntimeException("Can't join, there are too many sharks in the sea");
+            }
+            Player new_player = new Player();
+            new_player.setName(name);
 
-        // Save player and add it in the player set of the world
-        Player saved_player = this.playerService.addPlayer(new_player);
-        Set<Player> players  = world.getPlayers();
-        players.add(saved_player);
-        world.setPlayers(players);
+            new_player.setPos_x(newX);
+            new_player.setPos_y(newY);
 
-        this.repository.save(world);
+            // Save player and add it in the player set of the world
+            Player saved_player = this.playerService.addPlayer(new_player);
+            Set<Player> players  = world.getPlayers();
+            players.add(saved_player);
+            world.setPlayers(players);
+            this.repository.save(world);
 
-        return saved_player;
+            return saved_player;
+        }
+    }
+
+    private void reset(World world) {
+        List<Integer> foodIds = new ArrayList<>();
+        List<Integer> playerIds = new ArrayList<>();
+        List<Integer> minesIds = new ArrayList<>();
+
+        for (Food food : world.getFoods()) { foodIds.add(food.getId()); }
+        for (Player player : world.getPlayers()) { playerIds.add(player.getId()); }
+        for (Mine mine : world.getMines()) { minesIds.add(mine.getId()); }
+
+        for(Integer id: foodIds) {this.foodService.delete(id);}
+        for(Integer id: playerIds) {this.playerService.delete(id);}
+        for(Integer id: minesIds) {this.mineService.delete(id);}
+
+        this.repository.delete(world);
+    }
+
+    private boolean checkIfSpawnIsIncorrect(float newX, float newY) {
+        for(Player p : getWorld().getPlayers()) {
+            float distance = (float) Math.sqrt(Math.pow(p.getPos_x()-newX,2)+Math.pow(p.getPos_y()-newY,2));
+            if(distance < this.getREQUIRED_SPAWN_AREA()) {
+                System.out.println(" True");
+                return true;
+            }
+        }
+        return false;
     }
 }

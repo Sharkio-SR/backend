@@ -1,5 +1,6 @@
 package com.sharkio.backend.model;
 
+import com.sharkio.backend.enums.WorldState;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +20,10 @@ public class World {
     @Column(name="y_dim")
     private float y_dim;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name="state")
+    private WorldState state;
+
     @ManyToMany
     @JoinTable(name = "World_Player",
     joinColumns = @JoinColumn(name = "world_id"),
@@ -30,4 +35,10 @@ public class World {
             joinColumns = @JoinColumn(name = "world_id"),
             inverseJoinColumns = @JoinColumn(name = "food_id"))
     private Set<Food> foods;
+
+    @ManyToMany
+    @JoinTable(name = "World_Mine",
+            joinColumns = @JoinColumn(name = "world_id"),
+            inverseJoinColumns = @JoinColumn(name = "mine_id"))
+    private Set<Mine> mines;
 }
