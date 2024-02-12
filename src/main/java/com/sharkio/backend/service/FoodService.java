@@ -4,7 +4,9 @@ import com.sharkio.backend.model.Food;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.FoodRepository;
 import com.sharkio.backend.repository.WorldRepository;
+
 import lombok.Data;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +15,17 @@ import java.util.Set;
 @Data
 @Service
 public class FoodService {
+    /******************************************************************************************************************/
+    /*                                                 ATTRIBUTES                                                     */
+    /******************************************************************************************************************/
     @Autowired
     private FoodRepository repository;
     @Autowired
     private WorldRepository worldRepository;
 
-
+    /******************************************************************************************************************/
+    /*                                                 MAIN FUNCTIONS                                                 */
+    /******************************************************************************************************************/
     public Iterable<Food> getFoods() {
         return this.repository.findAll();
     }
