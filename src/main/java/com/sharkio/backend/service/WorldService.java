@@ -6,16 +6,21 @@ import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.enums.WorldState;
 import com.sharkio.backend.repository.WorldRepository;
-import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.awt.geom.Rectangle2D;
+import lombok.Data;
+
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.*;
 
 @Data
 @Service
 public class WorldService {
+    /******************************************************************************************************************/
+    /*                                                 ATTRIBUTES                                                     */
+    /******************************************************************************************************************/
+    // Global variable of the world
     private final float X_DIM = 600;
     private final float Y_DIM = 600;
     private final Integer NB_FOODS = 20;
@@ -23,9 +28,9 @@ public class WorldService {
     private final float REQUIRED_SPAWN_AREA = 60.00f;
     private final int MAX_JOIN_TRIES = 200;
 
+    // Autowired components
     @Autowired
     private WorldRepository repository;
-
     @Autowired
     private PlayerService playerService;
     @Autowired
@@ -33,44 +38,9 @@ public class WorldService {
     @Autowired
     private MineService mineService;
 
-    private World initWorld() {
-        Random random  = new Random();
-        World world = new World();
-        world.setX_dim(this.X_DIM);
-        world.setY_dim(this.Y_DIM);
-        world.setPlayers(new HashSet<>());
-        world.setState(WorldState.RUNNING);
-
-        Set<Food> foods = new HashSet<>();
-        for(int i=0; i<this.NB_FOODS; i++) {
-            Food f = new Food();
-            f.setPos_x(random.nextFloat()* world.getX_dim());
-            f.setPos_y(random.nextFloat()* world.getY_dim());
-            this.foodService.addFood(f);
-            foods.add(f);
-        }
-
-        Set<Mine> mines = new HashSet<>();
-        for(int i=0; i<this.NB_MINES; i++) {
-            Mine m = new Mine();
-            m.setPos_x(random.nextFloat()* world.getX_dim());
-            m.setPos_y(random.nextFloat()* world.getY_dim());
-            this.mineService.addMine(m);
-            mines.add(m);
-        }
-
-        world.setFoods(foods);
-        world.setMines(mines);
-
-        this.repository.save(world);
-
-        return world;
-    }
-
-    public Boolean getState() {
-        return this.getWorld().getState() == WorldState.RUNNING;
-    }
-
+    /******************************************************************************************************************/
+    /*                                                 MAIN FUNCTIONS                                                 */
+    /******************************************************************************************************************/
     public World getWorld() {
         // Look if a World already exists, if yes => return it, otherwise create and save it
         // Singleton in database mocking strategy
@@ -79,6 +49,10 @@ public class WorldService {
             return initWorld();
         }
         return this.repository.findAll().iterator().next();
+    }
+
+    public Boolean getState() {
+        return this.getWorld().getState() == WorldState.RUNNING;
     }
 
     public Player join(String name) {
@@ -102,7 +76,6 @@ public class WorldService {
                 newX = random.nextFloat()* world.getX_dim();
                 newY = random.nextFloat()* world.getY_dim();
             }
-            //System.out.println(iter + " | " + checkIfSpawnIsCorrect(newX, newY));
             if(iter==this.MAX_JOIN_TRIES-1) {
                 throw new RuntimeException("Can't join, there are too many sharks in the sea");
             }
@@ -123,15 +96,59 @@ public class WorldService {
         }
     }
 
+    /******************************************************************************************************************/
+    /*                                               PRIVATE FUNCTIONS                                                */
+    /******************************************************************************************************************/
+    private World initWorld() {
+        // Create new world
+        Random random  = new Random();
+        World world = new World();
+        world.setX_dim(this.X_DIM);
+        world.setY_dim(this.Y_DIM);
+        world.setPlayers(new HashSet<>());
+        world.setState(WorldState.RUNNING);
+
+        // Fill code with fishes
+        Set<Food> foods = new HashSet<>();
+        for(int i=0; i<this.NB_FOODS; i++) {
+            Food f = new Food();
+            f.setPos_x(random.nextFloat()* world.getX_dim());
+            f.setPos_y(random.nextFloat()* world.getY_dim());
+            this.foodService.addFood(f);
+            foods.add(f);
+        }
+
+        // Fill world with mines
+        Set<Mine> mines = new HashSet<>();
+        for(int i=0; i<this.NB_MINES; i++) {
+            Mine m = new Mine();
+            m.setPos_x(random.nextFloat()* world.getX_dim());
+            m.setPos_y(random.nextFloat()* world.getY_dim());
+            this.mineService.addMine(m);
+            mines.add(m);
+        }
+
+        // Save in repository
+        world.setFoods(foods);
+        world.setMines(mines);
+
+        this.repository.save(world);
+
+        return world;
+    }
+
     private void reset(World world) {
+        // Create lists to get living entities ids
         List<Integer> foodIds = new ArrayList<>();
         List<Integer> playerIds = new ArrayList<>();
         List<Integer> minesIds = new ArrayList<>();
 
+        // Collect ids
         for (Food food : world.getFoods()) { foodIds.add(food.getId()); }
         for (Player player : world.getPlayers()) { playerIds.add(player.getId()); }
         for (Mine mine : world.getMines()) { minesIds.add(mine.getId()); }
 
+        // Remove associations
         for(Integer id: foodIds) {this.foodService.delete(id);}
         for(Integer id: playerIds) {this.playerService.delete(id);}
         for(Integer id: minesIds) {this.mineService.delete(id);}
@@ -140,10 +157,10 @@ public class WorldService {
     }
 
     private boolean checkIfSpawnIsIncorrect(float newX, float newY) {
+        // Compute distance for each player, compute distance
         for(Player p : getWorld().getPlayers()) {
             float distance = (float) Math.sqrt(Math.pow(p.getPos_x()-newX,2)+Math.pow(p.getPos_y()-newY,2));
-            if(distance < this.getREQUIRED_SPAWN_AREA()) {
-                System.out.println(" True");
+            if(distance < this.REQUIRED_SPAWN_AREA) {
                 return true;
             }
         }

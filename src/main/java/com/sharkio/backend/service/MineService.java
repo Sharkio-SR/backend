@@ -4,7 +4,9 @@ import com.sharkio.backend.model.Mine;
 import com.sharkio.backend.model.World;
 import com.sharkio.backend.repository.MineRepository;
 import com.sharkio.backend.repository.WorldRepository;
+
 import lombok.Data;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +15,17 @@ import java.util.Set;
 @Data
 @Service
 public class MineService {
+    /******************************************************************************************************************/
+    /*                                                 ATTRIBUTES                                                     */
+    /******************************************************************************************************************/
     @Autowired
     private MineRepository repository;
     @Autowired
     private WorldRepository worldRepository;
 
-
+    /******************************************************************************************************************/
+    /*                                                 MAIN FUNCTIONS                                                 */
+    /******************************************************************************************************************/
     public Iterable<Mine> getMines() {
         return this.repository.findAll();
     }
