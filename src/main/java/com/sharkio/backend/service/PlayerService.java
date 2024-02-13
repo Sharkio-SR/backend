@@ -5,17 +5,15 @@ import com.sharkio.backend.model.Food;
 import com.sharkio.backend.model.Mine;
 import com.sharkio.backend.model.Player;
 import com.sharkio.backend.model.World;
-import com.sharkio.backend.repository.MineRepository;
 import com.sharkio.backend.repository.PlayerRepository;
 import com.sharkio.backend.repository.WorldRepository;
-import java.awt.geom.Rectangle2D;
 
-import jakarta.persistence.Tuple;
 import lombok.Data;
-import org.hibernate.sql.results.internal.TupleImpl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -24,6 +22,21 @@ import java.util.Set;
 @Data
 @Service
 public class PlayerService {
+    /******************************************************************************************************************/
+    /*                                                 ATTRIBUTES                                                     */
+    /******************************************************************************************************************/
+    private final int PENALTY = 2;
+    private final int SCORE_POINTS = 1;
+    private final float MOVE_RANGE = 4;
+    private final int IMG_MID_WITH = 30;
+    private final int IMG_MID_HEIGHT = 17;
+    private final double EATING_RANGE = 10;
+    private final float PLAYER_HITBOX_RANGE = 27;
+    private final List<String> MOVE_ERRORS = new ArrayList<>(
+            List.of("New coordinates are out of bound",
+                    "Invalid move, stop trying tp",
+                    "Can't move here, there is a collision"));
+
     @Autowired
     private PlayerRepository repository;
     @Autowired
@@ -33,17 +46,9 @@ public class PlayerService {
     @Autowired
     private MineService mineService;
 
-    private final double EATING_RANGE = 10;
-    private final int SCORE_POINTS = 1;
-    private final int PENALTY = 2;
-    private final float MOVE_RANGE = 4;
-    private final float PLAYER_HITBOX_RANGE = 27;
-    private final int IMG_MID_WITH = 30;
-    private final int IMG_MID_HEIGHT = 17;
-
-    private final List<String> MOVE_ERRORS = new ArrayList<>(List.of("New coordinates are out of bound", "Invalid move, stop trying tp", "Can't move here, there is a collision"));
-
-
+    /******************************************************************************************************************/
+    /*                                                 MAIN FUNCTIONS                                                 */
+    /******************************************************************************************************************/
     public Iterable<Player> getPlayers() {
         return this.repository.findAll();
     }
@@ -88,11 +93,13 @@ public class PlayerService {
         // get player and world
         World world = this.worldRepository.findAll().iterator().next();
 
+        // Validate movement
         if(world.getState() == WorldState.RUNNING) {
             Player player = this.getById(id);
 
             int validation = is_valid_move(player, world, newX, newY);
 
+            // Collision
             if (validation == 3) {
                 int possibilities = tryOtherMove(player, world, newX, newY);
                 if (possibilities == 1) {
@@ -102,6 +109,7 @@ public class PlayerService {
                 }
             }
 
+            // Move
             validation = is_valid_move(player, world, newX, newY);
             if (validation == 0) {
                 // Change value
@@ -133,24 +141,9 @@ public class PlayerService {
         throw new RuntimeException("No current game running");
     }
 
-    private int tryOtherMove(Player player, World world, float newX, float newY) {
-        if(is_valid_move(player, world, newX, player.getPos_y())==0) {
-            return 1;
-        } else if (is_valid_move(player, world, player.getPos_x(), newY)==0) {
-            return 0;
-        }
-        return -1;
-    }
-
-    private boolean checkIfCollision(Player p, float newX, float newY) {
-        Rectangle2D rect1 = new Rectangle2D.Float(newX- getIMG_MID_WITH(), newY-
-            getIMG_MID_HEIGHT(), getIMG_MID_WITH()*2, getIMG_MID_HEIGHT()*2);
-        Rectangle2D rect2 = new Rectangle2D.Float(p.getPos_x()- getIMG_MID_WITH(), p.getPos_y()-
-            getIMG_MID_HEIGHT(), getIMG_MID_WITH()*2, getIMG_MID_HEIGHT()*2);
-
-        return rect1.intersects(rect2);
-    }
-
+    /******************************************************************************************************************/
+    /*                                               PRIVATE FUNCTIONS                                                */
+    /******************************************************************************************************************/
     private int is_valid_move(Player player, World world, float newX, float newY) {
         // Assert coordinates are valid
         if(0 > newX || newX > world.getX_dim() || 0 > newY || newY > world.getY_dim()) {
@@ -159,7 +152,7 @@ public class PlayerService {
 
         // Assert no teleport
         if((player.getPos_x()-this.MOVE_RANGE) > newX && newX > (player.getPos_x()+this.MOVE_RANGE) &&
-            (player.getPos_y()-this.MOVE_RANGE) > newY && newY > (player.getPos_y()+this.MOVE_RANGE)) {
+                (player.getPos_y()-this.MOVE_RANGE) > newY && newY > (player.getPos_y()+this.MOVE_RANGE)) {
             return 2;
         }
 
@@ -174,7 +167,28 @@ public class PlayerService {
         return 0;
     }
 
+    private boolean checkIfCollision(Player p, float newX, float newY) {
+        // Use rectangle intersection method from java geometry lib
+        Rectangle2D rect1 = new Rectangle2D.Float(newX- getIMG_MID_WITH(), newY-
+                getIMG_MID_HEIGHT(), getIMG_MID_WITH()*2, getIMG_MID_HEIGHT()*2);
+        Rectangle2D rect2 = new Rectangle2D.Float(p.getPos_x()- getIMG_MID_WITH(), p.getPos_y()-
+                getIMG_MID_HEIGHT(), getIMG_MID_WITH()*2, getIMG_MID_HEIGHT()*2);
+
+        return rect1.intersects(rect2);
+    }
+
+    private int tryOtherMove(Player player, World world, float newX, float newY) {
+        // Try move only on X or on Y => return axis
+        if(is_valid_move(player, world, newX, player.getPos_y())==0) {
+            return 1;
+        } else if (is_valid_move(player, world, player.getPos_x(), newY)==0) {
+            return 0;
+        } // if both are invalid => return -1s
+        return -1;
+    }
+
     private void eat(Player player, Set<Food> foods) {
+        // Store food ids in range
         List<Integer> idsFoodsToRemove = new ArrayList<>();
 
         for (Food f : foods) {
@@ -200,6 +214,7 @@ public class PlayerService {
     }
 
     private void explode(Player player, Set<Mine> mines) {
+        // Store mines in range
         List<Integer> idsMinesToRemove = new ArrayList<>();
 
         for (Mine m : mines) {
@@ -208,7 +223,7 @@ public class PlayerService {
             }
         }
 
-        // remove all food in eating range
+        // remove all mines in eating range
         for (int idMine : idsMinesToRemove) {
             this.mineService.delete(idMine);
             int newScore = player.getScore() - this.PENALTY;
@@ -225,28 +240,34 @@ public class PlayerService {
     }
 
     private void respawnMine() {
-        Mine mine = new Mine();
         Random random  = new Random();
         World world = worldRepository.findAll().iterator().next();
+        // Create new mine
+        Mine mine = new Mine();
 
+        // Init in random position
         mine.setPos_x(random.nextFloat()* world.getX_dim());
         mine.setPos_y(random.nextFloat()* world.getY_dim());
         mineService.addMine(mine);
 
+        // Associate and save
         Set<Mine> mines = world.getMines();
         mines.add(mine);
         world.setMines(mines);
     }
 
     private void respawnFish() {
-        Food food = new Food();
         Random random  = new Random();
         World world = worldRepository.findAll().iterator().next();
+        // Create new food
+        Food food = new Food();
 
+        // Init in random position
         food.setPos_x(random.nextFloat()* world.getX_dim());
         food.setPos_y(random.nextFloat()* world.getY_dim());
         foodService.addFood(food);
 
+        // Associate and save
         Set<Food> foods = world.getFoods();
         foods.add(food);
         worldRepository.save(world);
